@@ -8,7 +8,8 @@
 <!-- This starts the NetworkTables websocket, it can be accessed from multiple
      pages simultaneously -->
 <script src="/networktables/networktables.js"></script>
-
+<link rel = "stylesheet" href = "css/style.css">
+<link rel = "stylesheet" href = "css/bootstrap.css">
 <!-- Obviously, you will want to copy this file locally in a real
      dashboard, as the Driver Station won't have internet access -->
 <script src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
@@ -17,64 +18,98 @@
      implement common functionality that you might find useful. Requires
      that d3.js and jQuery are included first -->
 <!-- <script src="/networktables/utils.js"></script> -->
+<div class = "container">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">
+  <a class="main-logo">S.W.A.T.</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
 
-<div>
-	NetworkTables websocket: <span id="connectstate">Unknown state</span><br/>
-	Robot: <span id="robotstate">Unknown state</span> @ <span id="robotAddress">disconnected</span>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="shell.php">Shell Commands</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+	<div class = "checkBox">
+		Program Running: <span id="connectstate">Unknown state</span><div class = "network-box"></div><br/>
+		Robot: <span id="robotstate">Unknown state</span> <div class = "robot-box"></div><br/>
+		IP: <span id="robotAddress">disconnected</span><div class = "ip-box"></div> <br/>
+		<div class="select-container">
+			<select id="auto-select">
+					<option>No auto modes found</option>
+					<!-- This gets populated by JS -->
+			</select>
+	</div>
+	</div>
+
+	<table id="nt" border=1>
+		<tbody></tbody>
+	</table>
 </div>
-<hr/>
-
-<table id="nt" border=1>
-	<tbody></tbody>
-</table>
 
 
 <script type="text/javascript">
-"use strict";
-$(document).ready(function(){
-	// sets a function that will be called when the websocket connects/disconnects
-	NetworkTables.addWsConnectionListener(onNetworkTablesConnection, true);
+	"use strict";
+	$(document).ready(function(){
+		// sets a function that will be called when the websocket connects/disconnects
+		NetworkTables.addWsConnectionListener(onNetworkTablesConnection, true);
+		// sets a function that will be called when the robot connects/disconnects
+		NetworkTables.addRobotConnectionListener(onRobotConnection, true);
+		// sets a function that will be called when any NetworkTables key/value changes
+		NetworkTables.addGlobalListener(onValueChanged, true);
+	});
+	function onRobotConnection(connected) {
+		if(connected){
+			$('#robotAddress').text(NetworkTables.getRobotAddress());
+			$(".robot-box").css("background-color", "green");
+			$(".ip-box").css("background-color", "green");
+			$('#robotstate').text("Connected!");
+		} else {
+			$(".robot-box").css("background-color", "red");
+			$(".ip-box").css("background-color", "red");
+			$('#robotstate').text("DISABLED AAHHAAHFHASDHFDAHFDHASHF!");
+			$('#robotAddress').text("AHHH FUCK");
+		}
 
-	// sets a function that will be called when the robot connects/disconnects
-	NetworkTables.addRobotConnectionListener(onRobotConnection, true);
-
-	// sets a function that will be called when any NetworkTables key/value changes
-	NetworkTables.addGlobalListener(onValueChanged, true);
-});
-function onRobotConnection(connected) {
-	$('#robotstate').text(connected ? "Connected!" : "Disconnected");
-	$('#robotAddress').text(connected ? NetworkTables.getRobotAddress() : "disconnected");
-}
-function onNetworkTablesConnection(connected) {
-	if (connected) {
-		$("#connectstate").text("Connected!");
-
-		// clear the table
-		$("#nt tbody > tr").remove();
-
-	} else {
-		$("#connectstate").text("Disconnected!");
 	}
-}
-function onValueChanged(key, value, isNew) {
-	// key thing here: we're using the various NetworkTable keys as
-	// the id of the elements that we're appending, for simplicity. However,
-	// the key names aren't always valid HTML identifiers, so we use
-	// the NetworkTables.keyToId() function to convert them appropriately
-	if (isNew) {
-		var tr = $('<tr></tr>').appendTo($('#nt > tbody:last'));
-		$('<td></td>').text(key).appendTo(tr);
-		$('<td></td>').attr('id', NetworkTables.keyToId(key))
-					   .text(value)
-					   .appendTo(tr);
-	} else {
-
-		// similarly, use keySelector to convert the key to a valid jQuery
-		// selector. This should work for class names also, not just for ids
-		$('#' + NetworkTables.keySelector(key)).text(value);
+	function onNetworkTablesConnection(connected) {
+		if (connected) {
+			$("#connectstate").text("Connected!");
+			$(".network-box").css("background-color", "green");
+			// clear the table
+			$("#nt tbody > tr").remove();
+		} else {
+			$("#connectstate").text("Disconnected!");
+			$(".robot-box").css("background-color", "red");
+			$(".ip-box").css("background-color", "red");
+			$(".network-box").css("background-color", "red");
+		}
 	}
-}
+	function onValueChanged(key, value, isNew) {
+		// key thing here: we're using the various NetworkTable keys as
+		// the id of the elements that we're appending, for simplicity. However,
+		// the key names aren't always valid HTML identifiers, so we use
+		// the NetworkTables.keyToId() function to convert them appropriately
+		if (isNew) {
+			var tr = $('<tr></tr>').appendTo($('#nt > tbody:last'));
+			$('<td></td>').text(key).appendTo(tr);
+			$('<td></td>').attr('id', NetworkTables.keyToId(key))
+						   .text(value)
+						   .appendTo(tr);
+		} else {
+			// similarly, use keySelector to convert the key to a valid jQuery
+			// selector. This should work for class names also, not just for ids
+			$('#' + NetworkTables.keySelector(key)).text(value);
+		}
+	}
 </script>
-
+<script src = "ui.js"></script>
 </body>
 </html>
