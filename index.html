@@ -12,7 +12,7 @@
 <link rel = "stylesheet" href = "css/bootstrap.css">
 <!-- Obviously, you will want to copy this file locally in a real
      dashboard, as the Driver Station won't have internet access -->
-<script src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
+<script src="jquery-3.2.1.min.js"></script>
 
 <!-- uncomment this is you want to use included utility functions that
      implement common functionality that you might find useful. Requires
@@ -41,6 +41,7 @@
 		Program Running: <span id="connectstate">Unknown state</span><div class = "network-box"></div><br/>
 		Robot: <span id="robotstate">Unknown state</span> <div class = "robot-box"></div><br/>
 		IP: <span id="robotAddress">disconnected</span><div class = "ip-box"></div> <br/>
+		Current Auto being Ran: <span id = "selectAuto">there is none BOY LIKER</span>
 		<div class="select-container">
 			<select id="auto-select">
 					<option>No auto modes found</option>
@@ -83,6 +84,7 @@
 		if (connected) {
 			$("#connectstate").text("Connected!");
 			$(".network-box").css("background-color", "green");
+			$("#selectAuto").text(NetworkTables.getValue("/SmartDashboard/Chooser/selected"));
 			// clear the table
 			$("#nt tbody > tr").remove();
 		} else {
@@ -109,6 +111,32 @@
 			$('#' + NetworkTables.keySelector(key)).text(value);
 		}
 	}
+let ui = {
+    autoSelect: document.getElementById('auto-select'),
+};
+NetworkTables.addKeyListener('/SmartDashboard/time_running', (key, value) => {
+    // Clear previous list
+    while (ui.autoSelect.firstChild) {
+        ui.autoSelect.removeChild(ui.autoSelect.firstChild);
+    }
+    // Make an option for each autonomous mode and put it in the selector
+    for (let i = 0; i < value.length; i++) {
+        var option = document.createElement('option');
+        option.appendChild(document.createTextNode(value[i]));
+        ui.autoSelect.appendChild(option);
+    }
+    // Set value to the already-selected mode. If there is none, nothing will happen.
+    ui.autoSelect.value = NetworkTables.getValue('/SmartDashboard/Chooser/selected');
+});
+
+// Load list of prewritten autonomous modes
+NetworkTables.addKeyListener('/SmartDashboard/autonomous/selected', (key, value) => {
+    ui.autoSelect.value = value;
+});
+ui.autoSelect.onchange = function () {
+    NetworkTables.putValue('/SmartDashboard/autonomous/selected', this.value);
+};
+
 </script>
 <script src = "ui.js"></script>
 </body>
