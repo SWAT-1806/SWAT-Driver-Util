@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+</head>
+<body>
+
+<!-- This starts the NetworkTables websocket, it can be accessed from multiple
+     pages simultaneously -->
+<script src="/networktables/networktables.js"></script>
+<link rel = "stylesheet" href = "css/style.css">
+<link rel = "stylesheet" href = "css/bootstrap.css">
+<!-- Obviously, you will want to copy this file locally in a real
+     dashboard, as the Driver Station won't have internet access -->
+<script src="jquery-3.2.1.min.js"></script>
+
+<!-- uncomment this is you want to use included utility functions that
+     implement common functionality that you might find useful. Requires
+     that d3.js and jQuery are included first -->
+<!-- <script src="/networktables/utils.js"></script> -->
+<div class = "container">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">
+  <a class="main-logo">S.W.A.T.</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="shell.php">Shell Commands</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+	<div class = "checkBox">
+		Program Running: <span id="connectstate">Unknown state</span><div class = "network-box"></div><br/>
+		Robot: <span id="robotstate">Unknown state</span> <div class = "robot-box"></div><br/>
+		IP: <span id="robotAddress">disconnected</span><div class = "ip-box"></div> <br/>
+		Current Auto being Ran: <span id = "selectAuto">there is none BOY LIKER</span>
+		<button onclick=sendCmd("/start-jar")>Start JAR</button>
+		<div class="select-container">
+			<select id="auto-select">
+					<option>No auto modes found</option>
+					<!-- This gets populated by JS -->
+			</select>
+	</div>
+	</div>
+
+	<table id="nt" border=1>
+		<tbody></tbody>
+	</table>
+</div>
+
+
+<script type="text/javascript">
+	"use strict";
+	$(document).ready(function(){
+		// sets a function that will be called when the websocket connects/disconnects
+		NetworkTables.addWsConnectionListener(onNetworkTablesConnection, true);
+		// sets a function that will be called when the robot connects/disconnects
+		NetworkTables.addRobotConnectionListener(onRobotConnection, true);
+		// sets a function that will be called when any NetworkTables key/value changes
+		NetworkTables.addGlobalListener(onValueChanged, true);
+	});
+	function onRobotConnection(connected) {
+		if(connected){
+			$('#robotAddress').text(NetworkTables.getRobotAddress());
+			$(".robot-box").css("background-color", "green");
+			$(".ip-box").css("background-color", "green");
+			$('#robotstate').text("Connected!");
+		} else {
+			$(".robot-box").css("background-color", "red");
+			$(".ip-box").css("background-color", "red");
+			$('#robotstate').text("DISABLED AAHHAAHFHASDHFDAHFDHASHF!");
+			$('#robotAddress').text("AHHH FUCK");
+		}
+
+	}
+	function onNetworkTablesConnection(connected) {
+		if (connected) {
+			$("#connectstate").text("Connected!");
+			$(".network-box").css("background-color", "green");
+			// clear the table
+			$("#nt tbody > tr").remove();
+		} else {
+			$("#connectstate").text("Disconnected!");
+			$(".robot-box").css("background-color", "red");
+			$(".ip-box").css("background-color", "red");
+			$(".network-box").css("background-color", "red");
+		}
+	}
+	function onValueChanged(key, value, isNew) {
+		//Here we will put things that will always be changed in the webpage
+		
+		$("#selectAuto").text(NetworkTables.getValue("/SmartDashboard/Chooser/selected"));
+		
+		// key thing here: we're using the various NetworkTable keys as
+		// the id of the elements that we're appending, for simplicity. However,
+		// the key names aren't always valid HTML identifiers, so we use
+		// the NetworkTables.keyToId() function to convert them appropriately
+		if (isNew) {
+			var tr = $('<tr></tr>').appendTo($('#nt > tbody:last'));
+			$('<td></td>').text(key).appendTo(tr);
+			$('<td></td>').attr('id', NetworkTables.keyToId(key))
+						   .text(value)
+						   .appendTo(tr);
+		} else {
+			// similarly, use keySelector to convert the key to a valid jQuery
+			// selector. This should work for class names also, not just for ids
+			$('#' + NetworkTables.keySelector(key)).text(value);
+		}
+	}
+let ui = {
+    autoSelect: document.getElementById('auto-select'),
+};
+NetworkTables.addKeyListener('/SmartDashboard/time_running', (key, value) => {
+    // Clear previous list
+    while (ui.autoSelect.firstChild) {
+        ui.autoSelect.removeChild(ui.autoSelect.firstChild);
+    }
+    // Make an option for each autonomous mode and put it in the selector
+    for (let i = 0; i < value.length; i++) {
+        var option = document.createElement('option');
+        option.appendChild(document.createTextNode(value[i]));
+        ui.autoSelect.appendChild(option);
+    }
+    // Set value to the already-selected mode. If there is none, nothing will happen.
+    ui.autoSelect.value = NetworkTables.getValue('/SmartDashboard/Chooser/selected');
+});
+
+// Load list of prewritten autonomous modes
+NetworkTables.addKeyListener('/SmartDashboard/autonomous/selected', (key, value) => {
+    ui.autoSelect.value = value;
+});
+ui.autoSelect.onchange = function () {
+    NetworkTables.putValue('/SmartDashboard/autonomous/selected', this.value);
+};
+
+</script>
+<script src = "ui.js"></script>
+<script>
+	function sendCmd(cmd) {
+		$.ajax({
+			url: cmd,
+			success: function( data ) {
+				alert("Completed SSH Request");
+			},
+			error: function () {
+				alert("You have done goofed Chris")
+			}
+		});
+	}
+	</script>
+</body>
+</html>
