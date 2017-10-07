@@ -4,7 +4,7 @@
     that you can use to connect your HTML/Javascript dashboard code to
     your robot via NetworkTables.
 
-    Run this application with python, then you can open your browser to 
+    Run this application with python, then you can open your browser to
     http://localhost:8888/ to view the index.html page.
 '''
 
@@ -31,8 +31,9 @@ def connectAndCommand(desired):
     logger.info("Running Command wait a bit fam")
     (stdin, stdout, stderr) = ssh.exec_command(desired)
 
-class printShit(tornado.web.RequestHandler):
-    def get(self): 
+class startJar(tornado.web.RequestHandler):
+    def get(self):
+        connectAndCommand("~/Desktop/./set-camera.sh")
         connectAndCommand("java -jar ~/Desktop/LiftTracker.jar")
 def init_networktables(options):
 
@@ -43,7 +44,7 @@ def init_networktables(options):
         logger.info("Connecting to networktables at %s", options.robot)
         NetworkTable.setIPAddress(options.robot)
         NetworkTable.setClientMode()
-    
+
     NetworkTable.initialize()
     logger.info("Networktables Initialized")
 
@@ -52,32 +53,32 @@ if __name__ == '__main__':
 
     # Setup options here
     parser = OptionParser()
-    
-    parser.add_option('-p', '--port', default=8888, 
+
+    parser.add_option('-p', '--port', default=8888,
                       help='Port to run web server on')
-    
-    parser.add_option('-v', '--verbose', default=False, action='store_true', 
+
+    parser.add_option('-v', '--verbose', default=False, action='store_true',
                       help='Enable verbose logging')
-    
-    parser.add_option('--robot', default='127.0.0.1', 
+
+    parser.add_option('--robot', default='127.0.0.1',
                       help="Robot's IP address")
-    
+
     parser.add_option('--dashboard', default=False, action='store_true',
                       help='Use this instead of --robot to receive the IP from the driver station. WARNING: It will not work if you are not on the same host as the DS!')
-    
+
     options, args = parser.parse_args()
-    
+
     # Setup logging
     logging.basicConfig(datefmt=log_datefmt,
                         format=log_format,
                         level=logging.DEBUG if options.verbose else logging.INFO)
-    
+
     if options.dashboard and options.robot != '127.0.0.1':
         parser.error("Cannot specify --robot and --dashboard")
-    
+
     # Setup NetworkTables
     init_networktables(options)
-    
+
     # setup tornado application with static handler + networktables support
     www_dir = abspath(join(dirname(__file__), 'www'))
     index_html = join(www_dir, 'index.html')
@@ -88,10 +89,10 @@ if __name__ == '__main__':
 
     if not exists(index_html):
         logger.warn("%s not found" % index_html)
-    
+
     app = tornado.web.Application(
         get_handlers() + [
-            (r"/shelly", printShit),
+            (r"/start-jar", startJar),
             (r"/()", NonCachingStaticFileHandler, {"path": index_html}),
             (r"/(.*)", NonCachingStaticFileHandler, {"path": www_dir})
         ]
