@@ -27,36 +27,20 @@
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-      </li>
       <li class="nav-item">
-        <a class="nav-link" href="field.html">Field Map</a>
+        <a class="nav-link" href="index.html">Home </a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="field.html">Field Map<span class="sr-only">(current)</span></a>
       </li>
     </ul>
   </div>
 </nav>
 
-	<div class = "checkBox">
-		Program Running: <span id="connectstate">Unknown state</span><div class = "network-box"></div><br/>
-		Robot: <span id="robotstate">Unknown state</span> <div class = "robot-box"></div><br/>
-		IP: <span id="robotAddress">disconnected</span><div class = "ip-box"></div> <br/>
-		Current Auto being Ran: <span id = "selectAuto">there is none BOY LIKER</span>
-		<button onclick=sendCmd("/start-jar")>Start JAR</button>
-		<div class="select-container">
-			<select id="auto-select">
-					<option>No auto modes found</option>
-					<!-- This gets populated by JS -->
-			</select>
-	</div>
-	</div>
-
-	<table id="nt" border=1>
-		<tbody></tbody>
-	</table>
+<div class = "map">
+	<img class = "field" src = "img/field.png">
+	<img class = "robot" src = "img/robot.png">
 </div>
-
-
 <script type="text/javascript">
 	"use strict";
 	$(document).ready(function(){
@@ -100,7 +84,7 @@
 
 		var pixelX = NetworkTables.getValue("/robotX") * 900;
 		pixelX = pixelX / 8.12;
-		pixelX = 450 + pixelX;
+		pixelX = 300 + pixelX;
 
 		var pixelY = Number(NetworkTables.getValue("/robotY")) * 469;
 		pixelY = pixelY /16.4592;
@@ -128,43 +112,6 @@
 let ui = {
     autoSelect: document.getElementById('auto-select'),
 };
-NetworkTables.addKeyListener('/SmartDashboard/time_running', (key, value) => {
-    // Clear previous list
-    while (ui.autoSelect.firstChild) {
-        ui.autoSelect.removeChild(ui.autoSelect.firstChild);
-    }
-    // Make an option for each autonomous mode and put it in the selector
-    for (let i = 0; i < value.length; i++) {
-        var option = document.createElement('option');
-        option.appendChild(document.createTextNode(value[i]));
-        ui.autoSelect.appendChild(option);
-    }
-    // Set value to the already-selected mode. If there is none, nothing will happen.
-    ui.autoSelect.value = NetworkTables.getValue('/SmartDashboard/Chooser/selected');
-});
-
-// Load list of prewritten autonomous modes
-NetworkTables.addKeyListener('/SmartDashboard/autonomous/selected', (key, value) => {
-    ui.autoSelect.value = value;
-});
-ui.autoSelect.onchange = function () {
-    NetworkTables.putValue('/SmartDashboard/autonomous/selected', this.value);
-};
 
 </script>
-<script src = "ui.js"></script>
-<script>
-	function sendCmd(cmd) {
-		$.ajax({
-			url: cmd,
-			success: function( data ) {
-				alert("Completed SSH Request");
-			},
-			error: function () {
-				alert("You have done goofed Chris")
-			}
-		});
-	}
-	</script>
-</body>
-</html>
+</div>
