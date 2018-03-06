@@ -27,7 +27,7 @@ log_format = "%(asctime)s:%(msecs)03d %(levelname)-8s: %(name)-20s: %(message)s"
 def connectAndCommand(desired):
     logger.info("Connecting and Logging into Host")
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect("10.18.6.8", username="ubuntu", password="ubuntu")
+    ssh.connect("10.18.6.50", port=5805, username="ubuntu", password="ubuntu")
     logger.info("Running Command wait a bit fam")
     (stdin, stdout, stderr) = ssh.exec_command(desired)
 
@@ -35,6 +35,10 @@ class startJar(tornado.web.RequestHandler):
     def get(self):
         connectAndCommand("~/Desktop/./set-camera.sh")
         connectAndCommand("java -jar ~/Desktop/LiftTracker.jar")
+
+class restartJar(tornado.web.RequestHandler):
+    def get(self):
+        connectAndCommand("~/Desktop/./restart-program.sh")
 def init_networktables(options):
 
     if options.dashboard:
@@ -93,6 +97,7 @@ if __name__ == '__main__':
     app = tornado.web.Application(
         get_handlers() + [
             (r"/start-jar", startJar),
+            (r"/restart-jar", restartJar),
             (r"/()", NonCachingStaticFileHandler, {"path": index_html}),
             (r"/(.*)", NonCachingStaticFileHandler, {"path": www_dir})
         ]

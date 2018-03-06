@@ -80,15 +80,12 @@
 	}
 	function onValueChanged(key, value, isNew) {
 		//Here we will put things that will always be changed in the webpage
-		var angleOfRobot = 90 + -Number(NetworkTables.getValue("/getYaw"));
+		var angleOfRobot = 90 + -Number(NetworkTables.getValue("/SmartDashboard/Current Yaw"));
 
-		var pixelX = NetworkTables.getValue("/robotX") * 900;
-		pixelX = pixelX / 8.12;
-		pixelX = 300 + pixelX;
+		var pixelX = 300 + (NetworkTables.getValue("/LiftTracker/segX") * 900) / 8.12;
 
-		var pixelY = Number(NetworkTables.getValue("/robotY")) * 469;
-		pixelY = pixelY /16.4592;
-		pixelY = 5 + pixelY
+		var pixelY = 5 + (NetworkTables.getValue("/LiftTracker/segY") * 469) / 16.4592;
+		console.log(pixelX);
 		$("#selectAuto").text(NetworkTables.getValue("/SmartDashboard/Chooser/selected"));
 		$('.robot').css('transform','rotate(' + angleOfRobot + 'deg');
 		$(".robot").css("top", pixelX);

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+</head>
+<body>
+
+<!-- This starts the NetworkTables websocket, it can be accessed from multiple
+     pages simultaneously -->
+<script src="/networktables/networktables.js"></script>
+<link rel = "stylesheet" href = "css/style.css">
+<link rel = "stylesheet" href = "css/bootstrap.css">
+<!-- Obviously, you will want to copy this file locally in a real
+     dashboard, as the Driver Station won't have internet access -->
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/chart.js"></script>
+
+<!-- uncomment this is you want to use included utility functions that
+     implement common functionality that you might find useful. Requires
+     that d3.js and jQuery are included first -->
+<!-- <script src="/networktables/utils.js"></script> -->
+<div class = "container">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">
+  <a href = "index.html" class="main-logo">S.W.A.T.</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="index.html">Home </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="cheesy_path/index.html">Field Map<span class="sr-only">(current)</span></a>
+			</li>
+			<li class="nav-item active">
+        <a class="nav-link" href="#">Graph Visualizer</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<div class = "graph-container">
+    <canvas id="myChart" width="90vw" height="30vh"></canvas>
+    <script>
+        for(i=0;)
+    var ctx = document.getElementById("myChart").getContext('2d');
+
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ["1", "2", "3", "4"],
+            datasets: [{
+                label: 'Cycle',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    }
+                }]
+            }
+        }
+    });
+    </script>
+
+</div>
+</body>
+</html>
