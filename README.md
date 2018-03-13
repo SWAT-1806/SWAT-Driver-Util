@@ -10,3 +10,9 @@
 
 # How to run?
 Simply edit the run.bat with your robot IP then run the bat file
+
+to install libraries:
+
+`pip install pynetworktables==2017.0.8`    
+
+`pip install pynetworktables2js==2017.0.4`
